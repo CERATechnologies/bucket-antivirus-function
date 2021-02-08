@@ -240,10 +240,6 @@ def lambda_handler(event, context):
     )
 
     result_time = get_timestamp()
-    # Set the properties on the object with the scan results
-    if "AV_UPDATE_METADATA" in os.environ:
-        set_av_metadata(s3_object, scan_result, scan_signature, result_time)
-    set_av_tags(s3_client, s3_object, scan_result, scan_signature, result_time)
 
     # Publish the scan results
     if AV_STATUS_SNS_ARN not in [None, ""]:
@@ -259,6 +255,12 @@ def lambda_handler(event, context):
     metrics.send(
         env=ENV, bucket=s3_object.bucket_name, key=s3_object.key, status=scan_result
     )
+
+    # Set the properties on the object with the scan results
+    if "AV_UPDATE_METADATA" in os.environ:
+        set_av_metadata(s3_object, scan_result, scan_signature, result_time)
+    set_av_tags(s3_client, s3_object, scan_result, scan_signature, result_time)
+
     # Delete downloaded file to free up room on re-usable lambda function container
     try:
         os.remove(file_path)
